@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:padding="15dp">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/profileImageView"
+            android:src="@drawable/profilepic"
+            android:layout_width="48dp"
+            android:layout_height="48dp" />
+
+        <TextView
+            android:id="@+id/userNameView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Name"
+            android:layout_alignParentTop="true"
+            android:paddingTop="5dp"
+            android:paddingLeft="10dp"
+            android:layout_toEndOf="@id/profileImageView"
+            android:layout_toRightOf="@id/profileImageView"
+            android:textColor="#333"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/lastMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="last user message"
+            android:layout_below="@id/userNameView"
+            android:layout_toEndOf="@id/profileImageView"
+            android:layout_toRightOf="@id/profileImageView"
+            android:paddingLeft="10dp"
+            android:textColor="#333"
+
+            />
+
+        <TextView
+            android:id="@+id/timestamp"
+            android:text="02:43 PM"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:paddingRight="5dp"/>
+
+    </RelativeLayout>
+
+</LinearLayout>

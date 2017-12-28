@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "77263369330",
+    "firebase_url": "https://whodat-9ab19.firebaseio.com",
+    "project_id": "whodat-9ab19",
+    "storage_bucket": "whodat-9ab19.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:77263369330:android:0f8467d53c7ce922",
+        "android_client_info": {
+          "package_name": "com.likethatalsocan.whodat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "77263369330-k3bc3i6o5dsgo19l1sblbp108uh8vb9m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.likethatalsocan.whodat",
+            "certificate_hash": "1e1a3500577aabd15714c5d3ee0e6d4e8c2a5b50"
+          }
+        },
+        {
+          "client_id": "77263369330-ovlr0s88onjjobkstradvkpvdr4k1ke1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqc56AzCeKxdB_t_iUe00iNP3o8AU6nuQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "77263369330-msqlmugk2n4gf9f6ce0skgk68fce78rs.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.likethatalsocan.WhoDat"
+              }
+            },
+            {
+              "client_id": "77263369330-ovlr0s88onjjobkstradvkpvdr4k1ke1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
