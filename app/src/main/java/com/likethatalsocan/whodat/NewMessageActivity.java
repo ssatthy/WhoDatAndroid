@@ -36,6 +36,9 @@ public class NewMessageActivity extends AppCompatActivity {
             }
         });
 
+        getSupportActionBar().setDisplayShowTitleEnabled(true);
+        getSupportActionBar().setTitle("Select a friend");
+
     }
 
 

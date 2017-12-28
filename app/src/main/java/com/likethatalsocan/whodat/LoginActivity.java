@@ -97,7 +97,6 @@ public class LoginActivity extends AppCompatActivity {
                 account.setPhone(phoneField.getText().toString());
 
                 String phoneNumber = phoneField.getText().toString();
-                System.out.println("login button clicked" + phoneNumber);
 
                 verifyPhoneNumber(phoneNumber);
 
@@ -226,8 +225,6 @@ public class LoginActivity extends AppCompatActivity {
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                                     System.out.println("========Upload success ==========");
                                     Uri downloadUrl = taskSnapshot.getDownloadUrl();
-
-                                    System.out.print("url :" + downloadUrl);
 
                                     account.setProfileImageUrl(downloadUrl.toString());
                                     String refreshedToken = FirebaseInstanceId.getInstance().getToken();

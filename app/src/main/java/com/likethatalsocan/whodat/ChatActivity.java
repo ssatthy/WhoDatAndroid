@@ -6,11 +6,15 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -32,6 +36,9 @@ public class ChatActivity extends AppCompatActivity {
 
     EditText messageEditText;
 
+    private static int GUESS_WHO = 1;
+
+    ChatListRecycleAdapter recycleAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +55,7 @@ public class ChatActivity extends AppCompatActivity {
         linearLayoutManager.setReverseLayout(true);
         recyclerView.setLayoutManager(linearLayoutManager);
 
-        ChatListRecycleAdapter recycleAdapter = new ChatListRecycleAdapter(this, accountId, toId, anonymous);
+        recycleAdapter = new ChatListRecycleAdapter(this, accountId, toId, anonymous);
 
         recyclerView.setAdapter(recycleAdapter);
 
@@ -167,6 +174,8 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 toId = anonymousId;
+                recycleAdapter.setToId(toId);
+                observeEndChat();
                 mDatabase.child("connections").child(myUid).child(accountId).setValue(toId);
 
                 mDatabase.child("last-user-message-read").child(myUid).child(accountId).setValue(0);
@@ -228,6 +237,68 @@ public class ChatActivity extends AppCompatActivity {
 
         resetReadCount();
 
+        if(!"none".equals(toId)) observeEndChat();
+
+    }
+
+    private void observeEndChat() {
+        if (anonymous) {
+            mDatabase.child("anonymous-users").child(accountId).addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+                    finish();
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        } else {
+            mDatabase.child("anonymous-users").child(toId).addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+                    finish();
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
     }
 
     private void resetReadCount() {
@@ -242,5 +313,105 @@ public class ChatActivity extends AppCompatActivity {
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {}});
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.chat_menu, menu);
+
+        MenuItem menuItemWho = menu.findItem(R.id.chatMenuWho);
+        MenuItem menuItemMissed = menu.findItem(R.id.chatMenuMissed);
+        MenuItem menuItemInfo = menu.findItem(R.id.chatMenuInfo);
+
+        if(anonymous) menuItemInfo.setVisible(false);
+        menuItemMissed.setVisible(false);
+        if (!anonymous) menuItemWho.setVisible(false);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.chatMenuWho :
+                System.out.println("Who pressed!.");
+                Intent intent = new Intent(this, NewMessageActivity.class);
+                startActivityForResult(intent, GUESS_WHO);
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == GUESS_WHO && resultCode == RESULT_OK) {
+            String accountId = data.getStringExtra("accountId");
+            if(this.toId.equals(accountId)) {
+                endAnonymousChat("caught");
+            } else {
+                updateFailedAttempt();
+            }
+
+        }
+    }
+
+    private void updateFailedAttempt() {
+        String myUid = mAuth.getCurrentUser().getUid();
+        mDatabase.child("failed-attempt").child(myUid).child(accountId).setValue(0);
+    }
+
+    private void endAnonymousChat(final String stage) {
+
+        String myUid = mAuth.getCurrentUser().getUid();
+        mDatabase.child("last-user-message").child(myUid).child(accountId).removeValue();
+        mDatabase.child("last-user-message").child(toId).child(myUid).removeValue();
+
+        mDatabase.child("last-user-message-read").child(myUid).child(accountId).removeValue();
+        mDatabase.child("last-user-message-read").child(toId).child(myUid).removeValue();
+
+        mDatabase.child("connections").child(toId).child(myUid).setValue("none");
+
+        mDatabase.child("user-messages").child(toId).child(myUid).removeValue();
+        mDatabase.child("user-messages").child(myUid).child(accountId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                Map<String, Object> messageList = (Map<String, Object>) dataSnapshot.getValue();
+
+                for(String messageId : messageList.keySet()) {
+                    mDatabase.child("messages").child(messageId).removeValue();
+                }
+
+                dataSnapshot.getRef().removeValue();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        mDatabase.child("anonymous-users").child(accountId).removeValue();
+
+        mDatabase.child("users").child(myUid).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Account account = dataSnapshot.getValue(Account.class);
+                mDatabase.child("chat-ended").child(toId).child(stage).setValue(account.getName());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        mDatabase.child("failed-attempt").child(myUid).child(accountId).removeValue();
+
     }
 }

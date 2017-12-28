@@ -117,6 +117,7 @@ public class ChatListRecycleAdapter extends RecyclerView.Adapter {
         });
 
         notifyDataSetChanged();
+
         resetReadCount();
     }
 
@@ -172,7 +173,8 @@ public class ChatListRecycleAdapter extends RecyclerView.Adapter {
 
     private boolean isMine(int position) {
         String myUid = mAuth.getCurrentUser().getUid();
-        return (anonymous && messages.get(position).getFromId().equals(myUid)) || (!anonymous && messages.get(position).getFromId().equals(toId));
+        return (anonymous && messages.get(position).getFromId().equals(myUid))
+                || (!anonymous && messages.get(position).getFromId().equals(toId));
     }
 
     @Override
@@ -216,5 +218,9 @@ public class ChatListRecycleAdapter extends RecyclerView.Adapter {
         public void setMessageTextView(TextView messageTextView) {
             this.messageTextView = messageTextView;
         }
+    }
+
+    public void setToId(String toId) {
+        this.toId = toId;
     }
 }

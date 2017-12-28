@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -153,7 +154,7 @@ public class MessageListViewAdapter extends ArrayAdapter<Message> {
                                     account.setId(userId);
                                     account.setToId(toUserId);
                                     message.setAccount(account);
-                                    messages.remove(message);
+                                    removeMessage(message);
                                     messages.add(message);
                                     reloadData();
                                 } else {
@@ -171,7 +172,7 @@ public class MessageListViewAdapter extends ArrayAdapter<Message> {
                                                 account.setName(anonymousName);
                                                 account.setAnonymous(true);
                                                 message.setAccount(account);
-                                                messages.remove(message);
+                                                removeMessage(message);
                                                 messages.add(message);
                                                 reloadData();
                                             } else {
@@ -210,6 +211,17 @@ public class MessageListViewAdapter extends ArrayAdapter<Message> {
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
 
+                Map<String, String> messageMap = (Map<String, String>) dataSnapshot.getValue();
+                final String messageId = messageMap.keySet().toArray()[0].toString();
+                Iterator<Message> iterator = messages.iterator();
+                while (iterator.hasNext()) {
+                    if(iterator.next().getId().equals(messageId)) {
+                        iterator.remove();
+                        break;
+                    }
+                }
+                adapter.notifyDataSetChanged();
+
             }
 
             @Override
@@ -225,6 +237,16 @@ public class MessageListViewAdapter extends ArrayAdapter<Message> {
 
         mDatabase.child("last-user-message").child(user.getUid()).addChildEventListener(listener);
 
+    }
+
+    private void removeMessage(Message message) {
+
+        Iterator<Message> iterator = messages.iterator();
+        while (iterator.hasNext())
+            if(iterator.next().getAccount().getId().equals(message.getAccount().getId())){
+                iterator.remove();
+                break;
+            }
     }
 
     private void reloadData() {

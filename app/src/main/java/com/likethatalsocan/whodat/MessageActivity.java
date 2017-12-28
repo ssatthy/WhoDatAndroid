@@ -28,7 +28,8 @@ public class MessageActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("development");
-
+    MessageListViewAdapter adapter;
+    ListView messageList;
 
     private static int SELECT_CONTACT = 1;
 
@@ -37,10 +38,8 @@ public class MessageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message);
 
-        ListView messageList = findViewById(R.id.messageList);
+        messageList = findViewById(R.id.messageList);
 
-        MessageListViewAdapter adapter = new MessageListViewAdapter(this);
-        messageList.setAdapter(adapter);
 
         messageList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -64,8 +63,6 @@ public class MessageActivity extends AppCompatActivity {
                 startActivityForResult(intent, SELECT_CONTACT);
             }
         });
-
-        setNameAndProfilePicture();
 
     }
 
@@ -106,7 +103,16 @@ public class MessageActivity extends AppCompatActivity {
 
         if (mAuth.getCurrentUser() == null){
             signOut();
+
         }
+
+        if(adapter == null) {
+            setNameAndProfilePicture();
+            adapter = new MessageListViewAdapter(this);
+            messageList.setAdapter(adapter);
+        }
+
+
     }
 
     private void signOut() {
