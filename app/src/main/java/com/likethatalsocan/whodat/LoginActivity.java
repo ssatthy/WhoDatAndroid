@@ -66,7 +66,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        mDatabase = FirebaseDatabase.getInstance().getReference().child("development");
+        mDatabase = FirebaseDatabase.getInstance().getReference().child(Configuration.environment);
 
         imageView = findViewById(R.id.imageView);
 
@@ -211,7 +211,7 @@ public class LoginActivity extends AppCompatActivity {
                             }
 
 
-                            StorageReference  imageStorageRef = storage.getReference().child("development").child("profile_pictures").child(user.getUid()+".jpg");
+                            StorageReference  imageStorageRef = storage.getReference().child(Configuration.environment).child("profile_pictures").child(user.getUid()+".jpg");
                             StorageMetadata metadata = new StorageMetadata.Builder().setContentType("application/octet-stream").build();
 
                             UploadTask uploadTask = imageStorageRef.putBytes(data, metadata);

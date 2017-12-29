@@ -15,11 +15,14 @@ import com.google.firebase.iid.FirebaseInstanceIdService;
 public class WhoDatFirebaseInstanceIdService extends FirebaseInstanceIdService {
 
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    private DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("development");
+    private DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child(Configuration.environment);
 
 
     @Override
     public void onTokenRefresh() {
+
+        if(mAuth.getCurrentUser() == null ) return;
+
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
 
         String myUid = mAuth.getCurrentUser().getUid();

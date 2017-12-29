@@ -31,7 +31,7 @@ import java.util.Map;
 public class ChatActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    private DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("development");
+    private DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child(Configuration.environment);
 
     String accountId;
     String toId;
@@ -42,6 +42,8 @@ public class ChatActivity extends AppCompatActivity {
     private static int GUESS_WHO = 1;
 
     ChatListRecycleAdapter recycleAdapter;
+    LinearLayoutManager linearLayoutManager;
+    RecyclerView recyclerView;
     private Menu menu;
 
     @Override
@@ -54,9 +56,8 @@ public class ChatActivity extends AppCompatActivity {
         anonymous = getIntent().getBooleanExtra("anonymous", false);
 
 
-        RecyclerView recyclerView = findViewById(R.id.recyclerChat);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        linearLayoutManager.setReverseLayout(true);
+        recyclerView = findViewById(R.id.recyclerChat);
+        linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(linearLayoutManager);
 
         recycleAdapter = new ChatListRecycleAdapter(this, accountId, toId, anonymous);
@@ -132,9 +133,12 @@ public class ChatActivity extends AppCompatActivity {
                         mDatabase.child("last-user-message-read").child(accountId).child(toId).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                Long Num =(Long) dataSnapshot.getValue();
-                                Long NumAfter = Num+1;
-                                dataSnapshot.getRef().setValue(NumAfter);}
+                                if(dataSnapshot.getValue() != null) {
+                                    Long Num =(Long) dataSnapshot.getValue();
+                                    Long NumAfter = Num+1;
+                                    dataSnapshot.getRef().setValue(NumAfter);
+                                }
+                            }
                             @Override
                             public void onCancelled(DatabaseError databaseError) {}});
 
@@ -145,11 +149,15 @@ public class ChatActivity extends AppCompatActivity {
 
                                 mDatabase.child("user-messages").child(myUid).child(accountId).child(messageId).setValue(0);
 
-                                mDatabase.child("last-user-message").child(myUid).child(accountId).child(messageId).setValue(toId);
+                                Map<String, Object> lastMsg1 = new HashMap<>();
+                                lastMsg1.put(messageId, toId);
+                                mDatabase.child("last-user-message").child(myUid).child(accountId).setValue(lastMsg1);
 
                                 mDatabase.child("user-messages").child(accountId).child(toId).child(messageId).setValue(0);
 
-                                mDatabase.child("last-user-message").child(accountId).child(toId).child(messageId).setValue(myUid);
+                                Map<String, Object> lastMsg2 = new HashMap<>();
+                                lastMsg2.put(messageId, myUid);
+                                mDatabase.child("last-user-message").child(accountId).child(toId).setValue(lastMsg2);
 
                             }
                         });
@@ -199,6 +207,7 @@ public class ChatActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayShowCustomEnabled(true);
         getSupportActionBar().setCustomView(titleBar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         mDatabase.child("users").child(accountId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -513,5 +522,13 @@ public class ChatActivity extends AppCompatActivity {
 
         mDatabase.child("failed-attempt").child(accountId).child(toId).removeValue();
 
+    }
+
+    public LinearLayoutManager getLinearLayoutManager() {
+        return linearLayoutManager;
+    }
+
+    public RecyclerView getRecyclerView() {
+        return recyclerView;
     }
 }

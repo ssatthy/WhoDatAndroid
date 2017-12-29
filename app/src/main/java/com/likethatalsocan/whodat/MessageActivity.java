@@ -27,7 +27,7 @@ public class MessageActivity extends AppCompatActivity {
 
 
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    private DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("development");
+    private DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child(Configuration.environment);
     MessageListViewAdapter adapter;
     ListView messageList;
 
@@ -101,17 +101,16 @@ public class MessageActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        if (mAuth.getCurrentUser() == null){
-            signOut();
-
-        }
-
-        if(adapter == null) {
+        if(adapter == null && mAuth.getCurrentUser() != null) {
             setNameAndProfilePicture();
             adapter = new MessageListViewAdapter(this);
             messageList.setAdapter(adapter);
         }
 
+        if (mAuth.getCurrentUser() == null){
+            signOut();
+
+        }
 
     }
 

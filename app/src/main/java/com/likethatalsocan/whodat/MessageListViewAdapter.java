@@ -46,7 +46,7 @@ public class MessageListViewAdapter extends ArrayAdapter<Message> {
         this.context = context;
         this.adapter = this;
 
-        mDatabase = FirebaseDatabase.getInstance().getReference().child("development");
+        mDatabase = FirebaseDatabase.getInstance().getReference().child(Configuration.environment);
         mAuth = FirebaseAuth.getInstance();
 
         getLastMessages();

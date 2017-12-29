@@ -38,12 +38,15 @@ public class ChatListRecycleAdapter extends RecyclerView.Adapter {
     private String toId;
     private boolean anonymous;
 
+    private ChatActivity context;
+
 
     private List<Message> messages = new ArrayList<>();
 
-    public ChatListRecycleAdapter(Context context, String accountId, String toId, boolean anonymous) {
+    public ChatListRecycleAdapter(ChatActivity context, String accountId, String toId, boolean anonymous) {
         inflater = LayoutInflater.from(context);
-        mDatabase = FirebaseDatabase.getInstance().getReference().child("development");
+        this.context = context;
+        mDatabase = FirebaseDatabase.getInstance().getReference().child(Configuration.environment);
         mAuth = FirebaseAuth.getInstance();
         this.accountId = accountId;
         this.toId = toId;
@@ -109,16 +112,35 @@ public class ChatListRecycleAdapter extends RecyclerView.Adapter {
 
     private void reloadData() {
 
-        Collections.sort(messages, new Comparator<Message>() {
-            @Override
-            public int compare(Message message, Message t1) {
-                return message.getTimestamp().intValue() > t1.getTimestamp().intValue() ? -1 : 1;
-            }
-        });
+        if(messages.size() > 12) {
+            Collections.sort(messages, new Comparator<Message>() {
+                @Override
+                public int compare(Message message, Message t1) {
+                    return message.getTimestamp().intValue() > t1.getTimestamp().intValue() ? -1 : 1;
+                }
+            });
+            context.getLinearLayoutManager().setReverseLayout(true);
+
+        } else {
+            Collections.sort(messages, new Comparator<Message>() {
+                @Override
+                public int compare(Message message, Message t1) {
+                    return message.getTimestamp().intValue() < t1.getTimestamp().intValue() ? -1 : 1;
+                }
+            });
+
+            context.getLinearLayoutManager().setReverseLayout(false);
+        }
 
         notifyDataSetChanged();
 
         resetReadCount();
+
+        if(context.getLinearLayoutManager().getReverseLayout()) {
+            context.getRecyclerView().scrollToPosition(0);
+        } else {
+            context.getRecyclerView().scrollToPosition(messages.size() - 1);
+        }
     }
 
     private void resetReadCount() {

@@ -18,13 +18,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by sathy on 27/12/17.
@@ -44,7 +39,7 @@ public class ContactListViewAdapter extends ArrayAdapter<Account> {
         this.context = context;
         this.adapter = this;
 
-        mDatabase = FirebaseDatabase.getInstance().getReference().child("development");
+        mDatabase = FirebaseDatabase.getInstance().getReference().child(Configuration.environment);
         mAuth = FirebaseAuth.getInstance();
 
         getContactList();
