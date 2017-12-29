@@ -121,6 +121,7 @@ public class MessageActivity extends AppCompatActivity {
         if(mAuth.getCurrentUser() != null) uid = mAuth.getCurrentUser().getUid();
 
         mAuth.signOut();
+        adapter = null;
 
         Intent intent = new Intent(this, LoginActivity.class);
         startActivity(intent);

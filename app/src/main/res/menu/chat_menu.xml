@@ -6,11 +6,7 @@
         android:title="Who?"
         app:showAsAction="always"/>
 
-    <item android:id="@+id/chatMenuMissed"
-        android:title="Missed"
-        app:showAsAction="always"/>
 
-    <item android:id="@+id/chatMenuInfo"
-        android:title="Info"
-        app:showAsAction="always"/>
+    <item android:id="@+id/chatMenuEnd"
+        android:title="End"/>
 </menu>

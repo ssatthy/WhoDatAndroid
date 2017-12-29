@@ -1,8 +1,11 @@
 package com.likethatalsocan.whodat;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.view.menu.ActionMenuItemView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -39,6 +42,7 @@ public class ChatActivity extends AppCompatActivity {
     private static int GUESS_WHO = 1;
 
     ChatListRecycleAdapter recycleAdapter;
+    private Menu menu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -239,6 +243,25 @@ public class ChatActivity extends AppCompatActivity {
 
         if(!"none".equals(toId)) observeEndChat();
 
+        observeFailedAttempt();
+
+    }
+
+    private void observeFailedAttempt() {
+        String myUid = mAuth.getCurrentUser().getUid();
+        mDatabase.child("failed-attempt").child(myUid).child(accountId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    menu.findItem(R.id.chatMenuWho).setVisible(false);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void observeEndChat() {
@@ -319,13 +342,9 @@ public class ChatActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.chat_menu, menu);
-
+        this.menu = menu;
         MenuItem menuItemWho = menu.findItem(R.id.chatMenuWho);
-        MenuItem menuItemMissed = menu.findItem(R.id.chatMenuMissed);
-        MenuItem menuItemInfo = menu.findItem(R.id.chatMenuInfo);
 
-        if(anonymous) menuItemInfo.setVisible(false);
-        menuItemMissed.setVisible(false);
         if (!anonymous) menuItemWho.setVisible(false);
 
         return super.onCreateOptionsMenu(menu);
@@ -340,6 +359,15 @@ public class ChatActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, NewMessageActivity.class);
                 startActivityForResult(intent, GUESS_WHO);
 
+                return true;
+
+            case R.id.chatMenuEnd :
+
+                if(anonymous) endAnonymousChat("end");
+                else endChat();
+
+                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -352,9 +380,30 @@ public class ChatActivity extends AppCompatActivity {
         if(requestCode == GUESS_WHO && resultCode == RESULT_OK) {
             String accountId = data.getStringExtra("accountId");
             if(this.toId.equals(accountId)) {
-                endAnonymousChat("caught");
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage("You caught this person.")
+                        .setTitle("Well Done!");
+                builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        endAnonymousChat("caught");
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+
+
             } else {
                 updateFailedAttempt();
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage("Your guess is wrong.")
+                        .setTitle("Missed It!");
+                builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
             }
 
         }
@@ -412,6 +461,57 @@ public class ChatActivity extends AppCompatActivity {
         });
 
         mDatabase.child("failed-attempt").child(myUid).child(accountId).removeValue();
+
+    }
+
+    private void endChat() {
+
+        String myUid = mAuth.getCurrentUser().getUid();
+        mDatabase.child("last-user-message").child(myUid).child(accountId).removeValue();
+        mDatabase.child("last-user-message").child(accountId).child(toId).removeValue();
+
+        mDatabase.child("last-user-message-read").child(myUid).child(accountId).removeValue();
+        mDatabase.child("last-user-message-read").child(accountId).child(toId).removeValue();
+
+        mDatabase.child("connections").child(myUid).child(accountId).setValue("none");
+
+        mDatabase.child("user-messages").child(accountId).child(toId).removeValue();
+        mDatabase.child("user-messages").child(myUid).child(accountId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                Map<String, Object> messageList = (Map<String, Object>) dataSnapshot.getValue();
+
+                for(String messageId : messageList.keySet()) {
+                    mDatabase.child("messages").child(messageId).removeValue();
+                }
+
+                dataSnapshot.getRef().removeValue();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        mDatabase.child("anonymous-users").child(toId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Map<String, String> anonymousMap = (Map<String, String>) dataSnapshot.getValue();
+                String anonymousName = anonymousMap.values().toArray()[0].toString();
+                mDatabase.child("chat-ended").child(accountId).child("ended").setValue(anonymousName);
+
+                dataSnapshot.getRef().removeValue();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        mDatabase.child("failed-attempt").child(accountId).child(toId).removeValue();
 
     }
 }
